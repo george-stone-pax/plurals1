@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Plural Potion - Flight</title>
+    <style>
+        /* Базовые стили и шрифты */
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Fredoka+One&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka One', 'Comic Neue', cursive, sans-serif;
+            background: linear-gradient(135deg, #1a0b2e, #4b1d52); 
+            color: white;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            user-select: none;
+            transition: background 1s ease;
+        }
+
+        /* Темы для разных уровней */
+        body.theme-1 { background: linear-gradient(135deg, #4facfe, #00f2fe); } /* Легкий */
+        body.theme-2 { background: linear-gradient(135deg, #fa709a, #fee140); } /* Средний */
+        body.theme-3 { background: linear-gradient(135deg, #1a0b2e, #4b1d52); } /* Сложный */
+
+        #app-container {
+            width: 100%;
+            max-width: 900px;
+            height: 100%;
+            max-height: 650px;
+            position: relative;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(150, 50, 255, 0.5);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Стили при полноэкранном режиме */
+        :fullscreen #app-container {
+            max-width: 100vw;
+            max-height: 100vh;
+            border-radius: 0;
+        }
+
+        /* Скраны (экраны) приложения */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .active { display: flex; }
+
+        h1 {
+            font-size: 3.5rem;
+            color: #ffcc00;
+            text-shadow: 3px 3px 0 #cc00ff, -2px -2px 0 #cc00ff, 2px -2px 0 #cc00ff, -2px 2px 0 #cc00ff;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            color: #55ff55;
+            text-shadow: 2px 2px 0 #000;
+            margin: 10px 0;
+        }
+
+        kbd {
+            background-color: #eee;
+            color: #333;
+            border-radius: 5px;
+            border: 2px solid #b4b4b4;
+            box-shadow: 0 2px 2px rgba(0,0,0,.2);
+            padding: 2px 8px;
+            font-family: inherit;
+            font-size: 1.1rem;
+        }
+
+        p {
+            font-family: 'Comic Neue', cursive;
+            font-size: 1.3rem;
+            line-height: 1.5;
+        }
+
+        /* Кнопки */
+        .btn {
+            background: #ff007f;
+            color: white;
+            border: 4px solid #fff;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            font-family: inherit;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 0, 127, 0.5);
+        }
+
+        .btn:hover {
+            transform: scale(1.05) translateY(-3px);
+            background: #ff3399;
+            box-shadow: 0 8px 20px rgba(255, 0, 127, 0.7);
+        }
+
+        .btn:disabled {
+            background: #666;
+            border-color: #999;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-gold {
+            background: linear-gradient(45deg, #ffd700, #ffa500);
+            color: #000;
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            animation: pulse-gold 2s infinite;
+        }
+
+        /* Верхняя панель (Громкость и Фулскрин) */
+        .top-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .control-panel {
+            display: flex;
+            align-items: center;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .control-panel span { margin-right: 10px; font-size: 1.5rem; }
+        
+        .icon-btn {
+            background: rgba(0,0,0,0.6);
+            border: 2px solid #fff;
+            color: #fff;
+            font-size: 1.5rem;
+            border-radius: 15px;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .icon-btn:hover { background: #fff; color: #000; transform: scale(1.1); }
+
+        /* --- КРАСИВАЯ ТЕОРИЯ --- */
+        .theory-wrapper {
+            width: 90%;
+            max-height: 65vh;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 10px;
+        }
+        .theory-wrapper::-webkit-scrollbar { width: 10px; }
+        .theory-wrapper::-webkit-scrollbar-thumb { background: #ff007f; border-radius: 10px; }
+        
+        .theory-card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: left;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-left: 8px solid #ccc;
+            position: relative;
+        }
+        .theory-card.rule-s { border-left-color: #4facfe; }
+        .theory-card.rule-es { border-left-color: #fa709a; }
+        .theory-card.rule-ies { border-left-color: #fee140; }
+        .theory-card.rule-ves { border-left-color: #9632ff; }
+        .theory-card.rule-exc { border-left-color: #ff007f; background: #fff0f5; }
+        .theory-card.rule-order { border-left-color: #55ff55; background: #f0fff0; }
+
+        .theory-card h3 {
+            margin: 0 0 10px 0;
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 1.4rem;
+        }
+        .theory-card p { margin: 0; font-size: 1.2rem; }
+        .highlight { color: #ff007f; font-weight: bold; background: #ffe6f2; padding: 2px 6px; border-radius: 5px; }
+        .word-example { display: inline-block; background: #eee; padding: 5px 10px; border-radius: 8px; margin-top: 5px; border: 1px dashed #ccc; }
+
+        /* Игровой экран */
+        #game-header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5rem;
+            z-index: 10;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: 2px solid #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        #game-header .level-info { color: #55ff55; font-weight: bold; }
+        #game-header .score-info { color: #ffcc00; font-weight: bold; }
+
+        #airplane {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: left 0.1s linear; /* Плавность для клавиатуры */
+        }
+
+        .airplane-sprite {
+            line-height: 1;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+        }
+
+        #plane-img {
+            width: 140px; 
+            transition: transform 0.15s ease-in-out;
+            transform: scaleX(1); 
+        }
+
+        .target-word {
+            background: rgba(0,0,0,0.8);
+            padding: 8px 25px;
+            border-radius: 20px;
+            font-size: 2.2rem;
+            color: #fff;
+            border: 3px solid #55ff55;
+            white-space: nowrap;
+            margin-bottom: 10px;
+            box-shadow: 0 0 15px rgba(85,255,85,0.7);
+            letter-spacing: 2px;
+        }
+
+        /* Пузыри */
+        #bubbles-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -120px;
+            border-radius: 50%;
+            width: 130px;
+            height: 130px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.6rem;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.1s;
+            font-weight: bold;
+        }
+
+        /* Эффекты пузырей для разных уровней */
+        .bubble-1 { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(100, 200, 255, 0.9)); border: 3px solid #fff; box-shadow: inset 0 0 20px rgba(255,255,255,0.8), 0 0 15px rgba(100, 200, 255, 0.8); }
+        .bubble-2 { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255, 150, 50, 0.9)); border: 3px solid #ffcc00; box-shadow: inset 0 0 20px rgba(255,255,255,0.8), 0 0 15px rgba(255, 150, 50, 0.8); }
+        .bubble-3 { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(150, 50, 255, 0.9)); border: 3px solid rgba(255,255,255,0.8); box-shadow: inset 0 0 20px rgba(255,255,255,0.8), 0 0 15px rgba(150, 50, 255, 0.8); }
+
+        /* Модальные окна (Объяснения и Критерии) */
+        .modal {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: white;
+            color: black;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.3rem;
+            max-width: 80%;
+            border: 5px solid #ff007f;
+            box-shadow: 0 10px 30px rgba(255,0,127,0.5);
+            animation: popIn 0.3s ease-out forwards;
+        }
+
+        .explanation-icon { font-size: 4rem; margin-bottom: 10px; }
+
+        /* Анимации */
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            50% { transform: translateY(-40vh) scale(1.1) translateX(20px); }
+            100% { transform: translateY(-120vh) scale(1) translateX(-20px); opacity: 0; }
+        }
+        @keyframes popGreen {
+            0% { transform: scale(1); background: rgba(85, 255, 85, 0.9); }
+            50% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(2); opacity: 0; display: none; }
+        }
+        @keyframes shakeRed {
+            0% { transform: translateX(0); background: rgba(255, 50, 50, 0.9); }
+            25% { transform: translateX(-15px) scale(1.1); }
+            50% { transform: translateX(15px) scale(1.1); }
+            75% { transform: translateX(-15px) scale(1.1); }
+            100% { transform: translateX(0); opacity: 0; }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 1); transform: scale(1.05); }
+            100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <!-- Верхняя панель (Громкость и Фулскрин) -->
+        <div class="top-controls">
+            <div class="control-panel">
+                <span>🔊</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            <button class="icon-btn" onclick="toggleFullScreen()" title="Во весь экран">⛶</button>
+        </div>
+
+        <!-- 1. ГЛАВНОЕ МЕНЮ -->
+        <div id="screen-menu" class="screen active">
+            <h1>Plural<br>Flight</h1>
+            
+            <button class="btn" onclick="showScreen('screen-theory')">Изучить Правила 📖</button>
+            <button class="btn" id="btn-start" onclick="showInstructions(1)" disabled>Начать игру 🔒</button>
+        </div>
+
+        <!-- 2. ЭКРАН ТЕОРИИ -->
+        <div id="screen-theory" class="screen">
+            <h2>Правила Полета (Множественное число)</h2>
+            <div class="theory-wrapper">
+                
+                <div class="theory-card rule-s">
+                    <h3>1. Базовое правило 🟩</h3>
+                    <p>К большинству слов мы просто добавляем окончание <span class="highlight">-s</span>.</p>
+                    <div class="word-example">cat ➔ cat<b>s</b></div>
+                    <div class="word-example">apple ➔ apple<b>s</b></div>
+                </div>
+
+                <div class="theory-card rule-es">
+                    <h3>2. Шипящие и буква "O" 🟪</h3>
+                    <p>Если слово заканчивается на <b>-s, -ss, -sh, -ch, -x</b> или <b>-o</b>, то для удобства произношения добавляем <span class="highlight">-es</span>.</p>
+                    <div class="word-example">fox ➔ fox<b>es</b></div>
+                    <div class="word-example">potato ➔ potato<b>es</b></div>
+                </div>
+
+                <div class="theory-card rule-ies">
+                    <h3>3. Коварная буква "Y" 🟨</h3>
+                    <p>Если на конце <b>согласная + y</b>, то <b>y</b> меняется на <b>i</b> и добавляется <span class="highlight">-es</span>.</p>
+                    <div class="word-example">baby ➔ bab<b>ies</b></div>
+                    <div class="word-example">city ➔ cit<b>ies</b></div>
+                </div>
+
+                <div class="theory-card rule-ves">
+                    <h3>4. Окончания -f и -fe 🟪</h3>
+                    <p>Буква <b>f</b> меняется на <b>v</b>, и мы добавляем <span class="highlight">-es</span>.</p>
+                    <div class="word-example">leaf ➔ lea<b>ves</b></div>
+                    <div class="word-example">knife ➔ kni<b>ves</b></div>
+                </div>
+
+                <div class="theory-card rule-exc">
+                    <h3>5. Особые ингредиенты (Исключения) 🟥</h3>
+                    <p>Эти слова не подчиняются правилам, их нужно выучить наизусть!</p>
+                    <div class="word-example">man ➔ <b>men</b></div>
+                    <div class="word-example">woman ➔ <b>women</b></div>
+                    <div class="word-example">child ➔ <b>children</b></div>
+                    <div class="word-example">tooth ➔ <b>teeth</b></div>
+                    <div class="word-example">foot ➔ <b>feet</b></div>
+                    <div class="word-example">mouse ➔ <b>mice</b></div>
+                    <div class="word-example">sheep ➔ <b>sheep</b></div>
+                </div>
+
+                <div class="theory-card rule-order">
+                    <h3>6. Порядок слов и Прилагательные 🤫</h3>
+                    <p>Важный секрет: в английском языке порядок слов строгий, а <b>прилагательные</b> перед существительными во множественном числе <b>НЕ меняются</b>!</p>
+                    <div class="word-example">one beautiful cat ➔ two beautiful cat<b>s</b></div>
+                    <p style="font-size: 1rem; color: #555; margin-top: 5px;">(Мы не говорим beautifuls cats, только существительное получает окончание).</p>
+                </div>
+
+            </div>
+            <button class="btn" onclick="unlockGame()">Я готов к полету! ✨</button>
+        </div>
+
+        <!-- ЭКРАН ИНСТРУКЦИЙ / МЕЖУРОВНЕВЫЙ ЭКРАН -->
+        <div id="screen-instructions" class="screen">
+            <h1 id="inst-title">Уровень 1</h1>
+            <div class="theory-card" style="border-left: none; text-align: center; max-width: 600px;">
+                <p>✈️ <b>Управление:</b> води мышкой, пальцем или используй стрелки <kbd>Влево</kbd> и <kbd>Вправо</kbd>.</p>
+                <p>🎯 <b>Цель:</b> смотри на слово на самолете и лови шары с <b>правильным</b> множественным числом!</p>
+                <p>⏩ <b>Ускорение:</b> нажми и держи стрелку <kbd>Вверх</kbd>, чтобы шары летели быстрее.</p>
+                <p id="inst-extra" style="color: #ff007f; font-weight: bold; margin-top: 15px; font-size: 1.5rem;"></p>
+            </div>
+            <button class="btn" onclick="startLevel()">Начать уровень! 🚀</button>
+            <button class="btn" style="background: #999; border-color: #777; box-shadow: none;" onclick="showScreen('screen-menu')">Вернуться в меню</button>
+        </div>
+
+        <!-- 3. ИГРОВОЙ ЭКРАН -->
+        <div id="screen-game" class="screen">
+            <div id="game-header">
+                <div class="level-info">📍 Уровень <span id="level-display">1</span>/3</div>
+                <div class="score-info">⭐ Поймано: <span id="score-display">0</span> / <span id="total-display">30</span></div>
+            </div>
+            
+            <div id="airplane">
+                <div class="target-word" id="current-word">Word</div>
+                <div class="airplane-sprite">
+                    <img id="plane-img" src="https://george-stone-pax.github.io/gamesnew/planeplane.png" alt="Самолет">
+                </div> 
+            </div>
+
+            <div id="bubbles-container"></div>
+        </div>
+
+        <!-- 4. ЭКРАН РЕЗУЛЬТАТОВ -->
+        <div id="screen-result" class="screen">
+            <h1>Полет завершен!</h1>
+            <h2>Твоя оценка: <span id="final-grade" style="font-size: 4rem; color: #ff007f;">5</span></h2>
+            <p style="font-size: 1.8rem; margin-bottom: 30px;">Итоговый счет: <span id="final-score">0</span> из <span id="final-total">30</span> (<span id="final-percent">0</span>%)</p>
+            
+            <!-- Секретная кнопка (появится только при оценке 5) -->
+            <button id="btn-secret" class="btn btn-gold" style="display:none; font-size: 1.8rem;" onclick="showSecretWord()">Показать СЕКРЕТНОЕ СЛОВО 🎁</button>
+            
+            <div style="margin-top: 20px;">
+                <button class="btn" style="background: #4facfe;" onclick="showCriteria()">Критерии оценки 📋</button>
+                <button class="btn" onclick="showScreen('screen-menu')">В главное меню 🏠</button>
+            </div>
+        </div>
+
+        <!-- МОДАЛЬНОЕ ОКНО КРИТЕРИЕВ -->
+        <div id="modal-criteria" class="modal">
+            <div class="modal-content">
+                <h2 style="color: #4facfe; margin-top:0;">Критерии оценки</h2>
+                <div style="text-align: left; margin: 20px 0;">
+                    <p><b>«5» (Отлично):</b> выполнено 100–85% баллов.</p>
+                    <p><b>«4» (Хорошо):</b> выполнено 84–70% баллов.</p>
+                    <p><b>«3» (Удовлетворительно):</b> выполнено 69–50% баллов.</p>
+                    <p><b>«2» (Плохо):</b> выполнено менее 50% баллов.</p>
+                </div>
+                <button class="btn" style="font-size: 1.2rem;" onclick="closeModal('modal-criteria')">Понятно</button>
+            </div>
+        </div>
+
+        <!-- МОДАЛЬНОЕ ОКНО ОБЪЯСНЕНИЯ ОШИБКИ -->
+        <div id="modal-explanation" class="modal">
+            <div class="modal-content" style="border-color: #ff5555;">
+                <div class="explanation-icon">💥</div>
+                <h2 style="color: #ff5555; margin-top:0;">Ой, ошибка!</h2>
+                <p id="exp-text" style="font-size: 1.5rem; margin: 15px 0;">Слово <b id="exp-wrong">cat</b> образует множественное число так: <b id="exp-correct" style="color:#55ff55;">cats</b>.</p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #ffcc00; margin-bottom: 20px;">
+                    <p id="exp-rule" style="margin:0; font-style: italic;"></p>
+                </div>
+                <button class="btn" style="background: #ff5555; border-color: #fff;" onclick="resumeGameAfterError()">Понял, летим дальше! ✈️</button>
+            </div>
+        </div>
+
+        <!-- СЕКРЕТНОЕ МОДАЛЬНОЕ ОКНО -->
+        <div id="modal-secret" class="modal">
+            <div class="modal-content" style="border-color: #ffd700; background: #fffdf0;">
+                <div class="explanation-icon">🎉</div>
+                <h2 style="color: #ffaa00; margin-top:0;">Секретное слово открыто!</h2>
+                <div style="font-size: 3rem; color: #ff007f; font-family: 'Fredoka One'; margin: 20px 0;">
+                    Roof - Крыша
+                </div>
+                <p>Запиши его, чтобы не забыть!</p>
+                <button class="btn btn-gold" style="animation: none;" onclick="closeModal('modal-secret')">Супер!</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- СИСТЕМА ЗАЩИТЫ STEPIK ---
+        (function() {
+            const allowedDomains = ['stepik.org', 'welcome.stepik.org', 'localhost', '127.0.0.1'];
+            const referrer = document.referrer;
+            const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const isSandbox = window.location.hostname === ''; 
+
+            const isInsideStepik = allowedDomains.some(domain => referrer.includes(domain));
+            
+            if (!isInsideStepik && !isLocal && !isSandbox) {
+                document.body.innerHTML = `
+                    <div style="background:#000; color:#fff; height:100vh; display:flex;
+                                flex-direction:column; align-items:center; justify-content:center;
+                                font-family:sans-serif; text-align:center; padding:20px;">
+                        <h1 style="color:#ff5555;">⛔️ Доступ ограничен</h1>
+                        <p style="font-size: 1.5rem; line-height: 1.6;">Эта игра — часть платного курса. <br>
+                        Пожалуйста, вернитесь к обучению на Stepik.</p>
+                        <a href="https://stepik.org" style="color:#4ade80; font-size: 1.5rem; margin-top:20px; text-decoration: none; border: 2px solid #4ade80; padding: 10px 20px; border-radius: 10px;">Перейти к курсу</a>
+                    </div>`;
+                window.stop();
+            }
+        })();
+
+        // --- АУДИО ФАЙЛЫ ---
+        const sndCorrect = new Audio('https://george-stone-pax.github.io/my-game-assets/rightanswer-95219.mp3');
+        const sndWrong = new Audio('https://george-stone-pax.github.io/my-game-assets/dodgeball.mp3');
+        const bgMusic = new Audio('https://george-stone-pax.github.io/my-game-assets/Aylex%20-%20Back%20To%20Life%20(freetouse.com).mp3');
+        bgMusic.loop = true;
+
+        const volumeSlider = document.getElementById('volume-slider');
+        function updateVolume() {
+            const vol = volumeSlider.value;
+            bgMusic.volume = vol * 0.5;
+            sndCorrect.volume = vol;
+            sndWrong.volume = vol;
+        }
+        volumeSlider.addEventListener('input', updateVolume);
+        updateVolume();
+
+        function toggleFullScreen() {
+            const doc = window.document;
+            const docEl = doc.documentElement;
+            const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+            const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+            if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+                requestFullScreen.call(docEl);
+            } else {
+                cancelFullScreen.call(doc);
+            }
+        }
+
+        // --- БАЗА СЛОВ ---
+        const wordsLevel1 = [
+            { singular: 'cat', correct: 'cats', wrong1: 'cates', wrong2: 'caties' },
+            { singular: 'dog', correct: 'dogs', wrong1: 'doges', wrong2: 'doggs' },
+            { singular: 'apple', correct: 'apples', wrong1: 'appls', wrong2: 'applees' },
+            { singular: 'car', correct: 'cars', wrong1: 'cares', wrong2: 'carss' },
+            { singular: 'book', correct: 'books', wrong1: 'bookes', wrong2: 'bokes' },
+            { singular: 'fox', correct: 'foxes', wrong1: 'foxs', wrong2: 'foxies' },
+            { singular: 'bus', correct: 'buses', wrong1: 'buss', wrong2: 'busies' },
+            { singular: 'box', correct: 'boxes', wrong1: 'boxs', wrong2: 'boxxes' },
+            { singular: 'dress', correct: 'dresses', wrong1: 'dresss', wrong2: 'dreses' },
+            { singular: 'watch', correct: 'watches', wrong1: 'watchs', wrong2: 'watchies' },
+            { singular: 'brush', correct: 'brushes', wrong1: 'brushs', wrong2: 'brushies' },
+            { singular: 'potato', correct: 'potatoes', wrong1: 'potatos', wrong2: 'potatoies' },
+            { singular: 'boy', correct: 'boys', wrong1: 'boyes', wrong2: 'boies' },
+            { singular: 'girl', correct: 'girls', wrong1: 'girles', wrong2: 'girll' },
+            { singular: 'glass', correct: 'glasses', wrong1: 'glasss', wrong2: 'glases' }
+        ];
+
+        const wordsLevel2 = [
+            { singular: 'baby', correct: 'babies', wrong1: 'babys', wrong2: 'babyes' },
+            { singular: 'city', correct: 'cities', wrong1: 'citys', wrong2: 'cityes' },
+            { singular: 'story', correct: 'stories', wrong1: 'storys', wrong2: 'storyes' },
+            { singular: 'party', correct: 'parties', wrong1: 'partys', wrong2: 'partyes' },
+            { singular: 'cherry', correct: 'cherries', wrong1: 'cherrys', wrong2: 'cherryes' },
+            { singular: 'family', correct: 'families', wrong1: 'familys', wrong2: 'familyes' },
+            { singular: 'leaf', correct: 'leaves', wrong1: 'leafs', wrong2: 'leafes' },
+            { singular: 'wolf', correct: 'wolves', wrong1: 'wolfs', wrong2: 'wolfes' },
+            { singular: 'wife', correct: 'wives', wrong1: 'wifes', wrong2: 'wivs' },
+            { singular: 'knife', correct: 'knives', wrong1: 'knifes', wrong2: 'knivs' },
+            { singular: 'thief', correct: 'thieves', wrong1: 'thiefs', wrong2: 'thiefes' },
+            { singular: 'life', correct: 'lives', wrong1: 'lifes', wrong2: 'livs' },
+            { singular: 'puppy', correct: 'puppies', wrong1: 'puppys', wrong2: 'puppyes' },
+            { singular: 'half', correct: 'halves', wrong1: 'halfs', wrong2: 'halfes' },
+            { singular: 'calf', correct: 'calves', wrong1: 'calfs', wrong2: 'calfes' }
+        ];
+
+        const wordsLevel3 = [
+            { singular: 'man', correct: 'men', wrong1: 'mans', wrong2: 'mens' },
+            { singular: 'woman', correct: 'women', wrong1: 'womans', wrong2: 'womens' },
+            { singular: 'child', correct: 'children', wrong1: 'childs', wrong2: 'childrens' },
+            { singular: 'mouse', correct: 'mice', wrong1: 'mouses', wrong2: 'mices' },
+            { singular: 'tooth', correct: 'teeth', wrong1: 'tooths', wrong2: 'teethes' },
+            { singular: 'sheep', correct: 'sheep', wrong1: 'sheeps', wrong2: 'sheepes' },
+            { singular: 'foot', correct: 'feet', wrong1: 'foots', wrong2: 'feets' },
+            { singular: 'person', correct: 'people', wrong1: 'persons', wrong2: 'peoples' },
+            { singular: 'goose', correct: 'geese', wrong1: 'gooses', wrong2: 'geeses' },
+            { singular: 'deer', correct: 'deer', wrong1: 'deers', wrong2: 'deeres' },
+            { singular: 'fish', correct: 'fish', wrong1: 'fishes', wrong2: 'fishs' },
+            { singular: 'ox', correct: 'oxen', wrong1: 'oxes', wrong2: 'oxs' },
+            { singular: 'aircraft', correct: 'aircraft', wrong1: 'aircrafts', wrong2: 'aircraftes' }
+        ];
+
+        function getRuleForWord(singular) {
+            const exceptions = ['man','woman','child','mouse','tooth','sheep','foot','person','goose','deer','fish','ox','aircraft'];
+            if (exceptions.includes(singular)) {
+                return "Это слово — исключение (особый ингредиент)! Его форму нужно выучить наизусть.";
+            }
+            if (singular.endsWith('y')) {
+                const vowels = ['a','e','i','o','u'];
+                const beforeY = singular[singular.length - 2];
+                if(vowels.includes(beforeY)) return "Слово оканчивается на гласную + Y (как boy). Мы просто добавляем -s.";
+                return "Слово оканчивается на согласную + Y. Буква 'y' меняется на 'i' и добавляется '-es'.";
+            }
+            if (singular.endsWith('x') || singular.endsWith('s') || singular.endsWith('ch') || singular.endsWith('sh') || singular.endsWith('o')) {
+                return "Слово шипит (или кончается на -o)! Добавляем '-es' для удобства произношения.";
+            }
+            if (singular.endsWith('f') || singular.endsWith('fe')) {
+                return "Слово оканчивается на -f или -fe. Буква 'f' меняется на 'v' и добавляется '-es'.";
+            }
+            return "Для этого слова работает базовое правило: мы просто добавляем '-s'.";
+        }
+
+        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+        let globalScore = 0;
+        let currentLevel = 1;
+        const questionsPerLevel = 10;
+        const totalLevels = 3;
+        const globalTotalQuestions = questionsPerLevel * totalLevels; // Всего 30
+        
+        let gameWords = [];
+        let currentWordIndex = 0;
+        let isAnswered = false;
+        let isGamePaused = false;
+        let gameLoopId;
+        let isAccelerating = false;
+
+        const airplane = document.getElementById('airplane');
+        const appContainer = document.getElementById('app-container');
+        const planeImg = document.getElementById('plane-img');
+        
+        let planeX = 400; 
+        let keys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false };
+        const planeSpeed = 10;
+
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) {
+                e.preventDefault(); 
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') keys[e.key] = true;
+            if (e.key === 'ArrowUp') {
+                keys[e.key] = true;
+                isAccelerating = true;
+                setBubblesSpeed(4);
+            }
+        }, { passive: false });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') keys[e.key] = false;
+            if (e.key === 'ArrowUp') {
+                keys[e.key] = false;
+                isAccelerating = false;
+                setBubblesSpeed(1);
+            }
+        });
+
+        function setBubblesSpeed(speedMultiplier) {
+            document.querySelectorAll('.bubble').forEach(bubble => {
+                bubble.getAnimations().forEach(anim => {
+                    anim.playbackRate = speedMultiplier;
+                });
+            });
+        }
+
+        function movePlane(clientX) {
+            if (!document.getElementById('screen-game').classList.contains('active') || isGamePaused) return;
+            const containerRect = appContainer.getBoundingClientRect();
+            
+            let newX = clientX - containerRect.left;
+            newX = Math.max(70, Math.min(newX, containerRect.width - 70));
+            
+            if (newX > planeX + 2) planeImg.style.transform = 'scaleX(-1)'; 
+            else if (newX < planeX - 2) planeImg.style.transform = 'scaleX(1)'; 
+            
+            planeX = newX;
+            airplane.style.left = `${planeX}px`;
+        }
+
+        document.addEventListener('mousemove', (e) => movePlane(e.clientX));
+        document.addEventListener('touchmove', (e) => movePlane(e.touches[0].clientX), {passive: true});
+
+        function checkCollisions() {
+            if (!document.getElementById('screen-game').classList.contains('active') || isAnswered || isGamePaused) {
+                gameLoopId = requestAnimationFrame(checkCollisions);
+                return;
+            }
+
+            if (keys.ArrowLeft || keys.ArrowRight) {
+                const containerRect = appContainer.getBoundingClientRect();
+                if (keys.ArrowLeft) {
+                    planeX -= planeSpeed;
+                    planeImg.style.transform = 'scaleX(1)';
+                }
+                if (keys.ArrowRight) {
+                    planeX += planeSpeed;
+                    planeImg.style.transform = 'scaleX(-1)';
+                }
+                planeX = Math.max(70, Math.min(planeX, containerRect.width - 70));
+                airplane.style.left = `${planeX}px`;
+            }
+
+            const planeRect = airplane.getBoundingClientRect();
+            const hitbox = {
+                left: planeRect.left + 30, right: planeRect.right - 30,
+                top: planeRect.top + 20, bottom: planeRect.bottom - 20
+            };
+
+            const bubbles = document.querySelectorAll('.bubble');
+            bubbles.forEach(bubble => {
+                if (bubble.dataset.processed) return;
+                const bRect = bubble.getBoundingClientRect();
+                
+                if (hitbox.left < bRect.right && hitbox.right > bRect.left && 
+                    hitbox.top < bRect.bottom && hitbox.bottom > bRect.top) {
+                    
+                    isAnswered = true;
+                    bubble.dataset.processed = "true";
+                    const isCorrect = bubble.dataset.correct === "true";
+                    checkAnswer(isCorrect, bubble);
+                }
+            });
+
+            gameLoopId = requestAnimationFrame(checkCollisions);
+        }
+
+        checkCollisions();
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if(screenId !== 'screen-game') {
+                document.body.className = '';
+            }
+        }
+
+        function unlockGame() {
+            const startBtn = document.getElementById('btn-start');
+            startBtn.disabled = false;
+            startBtn.innerHTML = 'Начать игру 🚀';
+            showScreen('screen-menu');
+            
+            bgMusic.play().catch(e => console.log("Музыка начнется по клику."));
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Показ инструкций перед каждым новым уровнем
+        function showInstructions(level) {
+            currentLevel = level;
+            document.body.className = '';
+            document.body.classList.add(`theme-${level}`); // Устанавливаем фон заранее
+            
+            document.getElementById('inst-title').innerText = `Уровень ${level}`;
+            const extraText = document.getElementById('inst-extra');
+            
+            if(level === 1) extraText.innerText = "Уровень 1: Легкие правила (-s, -es). Погнали!";
+            if(level === 2) extraText.innerText = "Уровень 2: Хитрые окончания (y ➔ ies, f ➔ ves). Будь внимательнее!";
+            if(level === 3) extraText.innerText = "Уровень 3: Слова-исключения! Вспоминай особые ингредиенты.";
+
+            showScreen('screen-instructions');
+        }
+
+        function startLevel() {
+            bgMusic.play(); 
+            
+            // Если начинаем с первого уровня (запуск из меню), сбрасываем глобальные очки
+            if (currentLevel === 1) {
+                globalScore = 0;
+            }
+            
+            currentWordIndex = 0;
+            isGamePaused = false;
+            
+            document.body.className = '';
+            document.body.classList.add(`theme-${currentLevel}`);
+
+            let selectedDatabase = wordsLevel1;
+            if (currentLevel === 2) selectedDatabase = wordsLevel2;
+            if (currentLevel === 3) selectedDatabase = wordsLevel3;
+
+            gameWords = shuffle([...selectedDatabase]).slice(0, questionsPerLevel);
+            
+            // Обновление интерфейса
+            document.getElementById('total-display').innerText = globalTotalQuestions;
+            document.getElementById('level-display').innerText = currentLevel;
+            updateScore();
+            
+            // Центрируем самолет перед стартом
+            const containerRect = appContainer.getBoundingClientRect();
+            planeX = containerRect.width / 2;
+            airplane.style.left = `${planeX}px`;
+
+            showScreen('screen-game');
+            spawnNextWord();
+        }
+
+        function updateScore() {
+            document.getElementById('score-display').innerText = globalScore;
+        }
+
+        function spawnNextWord() {
+            // Если все слова уровня пройдены
+            if (currentWordIndex >= questionsPerLevel) {
+                if (currentLevel < totalLevels) {
+                    // Переход на следующий уровень
+                    showInstructions(currentLevel + 1);
+                } else {
+                    // Конец игры
+                    endGame();
+                }
+                return;
+            }
+
+            isAnswered = false;
+            isGamePaused = false;
+            const wordObj = gameWords[currentWordIndex];
+            document.getElementById('current-word').innerText = wordObj.singular;
+            
+            const container = document.getElementById('bubbles-container');
+            container.innerHTML = ''; 
+
+            let options = [
+                { text: wordObj.correct, isCorrect: true },
+                { text: wordObj.wrong1, isCorrect: false },
+                { text: wordObj.wrong2, isCorrect: false }
+            ];
+            options = shuffle(options);
+
+            options.forEach((opt, index) => {
+                setTimeout(() => {
+                    if(isAnswered || isGamePaused) return; 
+                    createBubble(opt, index);
+                }, index * 500);
+            });
+        }
+
+        function createBubble(optionData, index) {
+            const container = document.getElementById('bubbles-container');
+            const bubble = document.createElement('div');
+            bubble.className = `bubble bubble-${currentLevel}`;
+            bubble.innerText = optionData.text;
+            bubble.dataset.correct = optionData.isCorrect;
+
+            const positions = ['20%', '50%', '80%'];
+            bubble.style.left = `calc(${positions[index]} - 65px)`; 
+            
+            const duration = (5 + Math.random() * 2) * 3;
+            bubble.style.animation = `floatUp ${duration}s linear forwards`;
+
+            bubble.addEventListener('animationend', () => {
+                if (!isAnswered && !isGamePaused && bubble.parentNode && optionData.isCorrect) {
+                    isAnswered = true;
+                    handleWrongAnswer(null); 
+                }
+            });
+
+            container.appendChild(bubble);
+
+            if (isAccelerating) {
+                bubble.getAnimations().forEach(anim => anim.playbackRate = 4);
+            }
+        }
+
+        function checkAnswer(isCorrect, bubbleElement) {
+            document.querySelectorAll('.bubble').forEach(b => {
+                b.style.animationPlayState = 'paused';
+                b.style.pointerEvents = 'none';
+            });
+
+            if (isCorrect) {
+                globalScore++; // Теперь баллы сквозные
+                updateScore();
+                sndCorrect.currentTime = 0;
+                sndCorrect.play();
+                bubbleElement.style.animation = 'popGreen 0.5s forwards';
+                
+                currentWordIndex++;
+                setTimeout(spawnNextWord, 1000);
+            } else {
+                sndWrong.currentTime = 0;
+                sndWrong.play();
+                bubbleElement.style.animation = 'shakeRed 0.6s forwards';
+                
+                setTimeout(() => {
+                    handleWrongAnswer(bubbleElement);
+                }, 600);
+            }
+        }
+
+        function handleWrongAnswer(bubbleElement) {
+            isGamePaused = true;
+            const wordObj = gameWords[currentWordIndex];
+            
+            document.getElementById('exp-wrong').innerText = wordObj.singular;
+            document.getElementById('exp-correct').innerText = wordObj.correct;
+            document.getElementById('exp-rule').innerText = getRuleForWord(wordObj.singular);
+            
+            document.getElementById('modal-explanation').style.display = 'flex';
+        }
+
+        function resumeGameAfterError() {
+            document.getElementById('modal-explanation').style.display = 'none';
+            currentWordIndex++;
+            spawnNextWord();
+        }
+
+        function endGame() {
+            const percent = Math.round((globalScore / globalTotalQuestions) * 100);
+            let grade = 2;
+
+            if (percent >= 85) grade = 5;
+            else if (percent >= 70) grade = 4;
+            else if (percent >= 50) grade = 3;
+            else grade = 2;
+
+            document.getElementById('final-score').innerText = globalScore;
+            document.getElementById('final-total').innerText = globalTotalQuestions;
+            document.getElementById('final-percent').innerText = percent;
+            
+            const gradeEl = document.getElementById('final-grade');
+            gradeEl.innerText = grade;
+            
+            if (grade === 5) gradeEl.style.color = '#55ff55';
+            else if (grade === 4) gradeEl.style.color = '#ffff55';
+            else if (grade === 3) gradeEl.style.color = '#ffaa00';
+            else gradeEl.style.color = '#ff5555';
+
+            const btnSecret = document.getElementById('btn-secret');
+            if (grade === 5) {
+                btnSecret.style.display = 'inline-block';
+            } else {
+                btnSecret.style.display = 'none';
+            }
+
+            showScreen('screen-result');
+        }
+
+        function showCriteria() {
+            document.getElementById('modal-criteria').style.display = 'flex';
+        }
+        function showSecretWord() {
+            document.getElementById('modal-secret').style.display = 'flex';
+        }
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+    </script>
+</body>
+</html>
