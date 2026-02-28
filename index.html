@@ -519,29 +519,6 @@
 
     </div>
 
-    <script>
-        // --- СИСТЕМА ЗАЩИТЫ STEPIK ---
-        (function() {
-            const allowedDomains = ['stepik.org', 'welcome.stepik.org', 'localhost', '127.0.0.1'];
-            const referrer = document.referrer;
-            const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            const isSandbox = window.location.hostname === ''; 
-
-            const isInsideStepik = allowedDomains.some(domain => referrer.includes(domain));
-            
-            if (!isInsideStepik && !isLocal && !isSandbox) {
-                document.body.innerHTML = `
-                    <div style="background:#000; color:#fff; height:100vh; display:flex;
-                                flex-direction:column; align-items:center; justify-content:center;
-                                font-family:sans-serif; text-align:center; padding:20px;">
-                        <h1 style="color:#ff5555;">⛔️ Доступ ограничен</h1>
-                        <p style="font-size: 1.5rem; line-height: 1.6;">Эта игра — часть платного курса. <br>
-                        Пожалуйста, вернитесь к обучению на Stepik.</p>
-                        <a href="https://stepik.org" style="color:#4ade80; font-size: 1.5rem; margin-top:20px; text-decoration: none; border: 2px solid #4ade80; padding: 10px 20px; border-radius: 10px;">Перейти к курсу</a>
-                    </div>`;
-                window.stop();
-            }
-        })();
 
         // --- АУДИО ФАЙЛЫ ---
         const sndCorrect = new Audio('https://george-stone-pax.github.io/my-game-assets/rightanswer-95219.mp3');
@@ -988,4 +965,5 @@
 
     </script>
 </body>
+
 </html>
