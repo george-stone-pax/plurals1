@@ -359,7 +359,6 @@
 
     <div id="app-container">
         
-        <!-- Верхняя панель (Громкость и Фулскрин) -->
         <div class="top-controls">
             <div class="control-panel">
                 <span>🔊</span>
@@ -368,7 +367,6 @@
             <button class="icon-btn" onclick="toggleFullScreen()" title="Во весь экран">⛶</button>
         </div>
 
-        <!-- 1. ГЛАВНОЕ МЕНЮ -->
         <div id="screen-menu" class="screen active">
             <h1>Plural<br>Flight</h1>
             
@@ -376,7 +374,6 @@
             <button class="btn" id="btn-start" onclick="showInstructions(1)" disabled>Начать игру 🔒</button>
         </div>
 
-        <!-- 2. ЭКРАН ТЕОРИИ -->
         <div id="screen-theory" class="screen">
             <h2>Правила Полета (Множественное число)</h2>
             <div class="theory-wrapper">
@@ -432,7 +429,6 @@
             <button class="btn" onclick="unlockGame()">Я готов к полету! ✨</button>
         </div>
 
-        <!-- ЭКРАН ИНСТРУКЦИЙ / МЕЖУРОВНЕВЫЙ ЭКРАН -->
         <div id="screen-instructions" class="screen">
             <h1 id="inst-title">Уровень 1</h1>
             <div class="theory-card" style="border-left: none; text-align: center; max-width: 600px;">
@@ -445,7 +441,6 @@
             <button class="btn" style="background: #999; border-color: #777; box-shadow: none;" onclick="showScreen('screen-menu')">Вернуться в меню</button>
         </div>
 
-        <!-- 3. ИГРОВОЙ ЭКРАН -->
         <div id="screen-game" class="screen">
             <div id="game-header">
                 <div class="level-info">📍 Уровень <span id="level-display">1</span>/3</div>
@@ -462,13 +457,11 @@
             <div id="bubbles-container"></div>
         </div>
 
-        <!-- 4. ЭКРАН РЕЗУЛЬТАТОВ -->
         <div id="screen-result" class="screen">
             <h1>Полет завершен!</h1>
             <h2>Твоя оценка: <span id="final-grade" style="font-size: 4rem; color: #ff007f;">5</span></h2>
             <p style="font-size: 1.8rem; margin-bottom: 30px;">Итоговый счет: <span id="final-score">0</span> из <span id="final-total">30</span> (<span id="final-percent">0</span>%)</p>
             
-            <!-- Секретная кнопка (появится только при оценке 5) -->
             <button id="btn-secret" class="btn btn-gold" style="display:none; font-size: 1.8rem;" onclick="showSecretWord()">Показать СЕКРЕТНОЕ СЛОВО 🎁</button>
             
             <div style="margin-top: 20px;">
@@ -477,7 +470,6 @@
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО КРИТЕРИЕВ -->
         <div id="modal-criteria" class="modal">
             <div class="modal-content">
                 <h2 style="color: #4facfe; margin-top:0;">Критерии оценки</h2>
@@ -491,7 +483,6 @@
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО ОБЪЯСНЕНИЯ ОШИБКИ -->
         <div id="modal-explanation" class="modal">
             <div class="modal-content" style="border-color: #ff5555;">
                 <div class="explanation-icon">💥</div>
@@ -504,7 +495,6 @@
             </div>
         </div>
 
-        <!-- СЕКРЕТНОЕ МОДАЛЬНОЕ ОКНО -->
         <div id="modal-secret" class="modal">
             <div class="modal-content" style="border-color: #ffd700; background: #fffdf0;">
                 <div class="explanation-icon">🎉</div>
@@ -519,7 +509,7 @@
 
     </div>
 
-
+    <script>
         // --- АУДИО ФАЙЛЫ ---
         const sndCorrect = new Audio('https://george-stone-pax.github.io/my-game-assets/rightanswer-95219.mp3');
         const sndWrong = new Audio('https://george-stone-pax.github.io/my-game-assets/dodgeball.mp3');
